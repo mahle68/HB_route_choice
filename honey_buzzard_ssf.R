@@ -208,24 +208,37 @@ dev.off()
 
 #### STEP 3: individual variation plots ---------------------------------------------------------------------
 
-tab_blh_i <- readRDS("/home/enourani/Desktop/Hester_HB/tab_blh_M_i.rds")
-tabl_wspt_i <- readRDS("/home/enourani/Desktop/Hester_HB/tab_wspt_M_i.rds")
 
-tabl_v_v <- readRDS("/home/enourani/Desktop/Hester_HB/tab_vv_M_v.rds")
-tab_wspt_v <- readRDS("/home/enourani/Desktop/Hester_HB/tab_wspt_M_v.rds")
+#assign migratory year to each individual ID
+load("/home/enourani/Desktop/Hester_HB/HB_annotated_data.RData") #annotated_data
 
+age_id <- annotated_data %>% 
+  group_by(id) %>% 
+  summarize(age = as.character(head(category,1))) %>% #extract adult vs first year data
+  arrange(age) %>% 
+  as.data.frame()
 
+#re-order names based on age
+VarOrder <- rev(unique(graph$Factor))
+VarNames <- VarOrder
+
+graph$Factor <- factor(graph$Factor, levels = VarOrder)
+levels(graph$Factor) <- VarNames
 
 #plot
-X11(width = 9, height = 9)
+#X11(width = 9, height = 7)
 
-par(mfrow = c(1,2), bty="n",
+png("/home/enourani/Desktop/Hester_HB/ind_var.png", units = "in", width = 9, height = 7, res = 300)
+
+par(mfrow = c(1,2), 
+    bty="n",
     cex = 0.7,
-    oma = c(0,3.5,0,0),
-    mar = c(3, 2, 0.5, 1)
+    oma = c(0,3.5,0,3),
+    mar = c(3, 2, 3,1),
+    font.axis = 3
 )
 
-for(var in c("","v")){ #all files with i are related to the model with blh. all with v are related to vertical velocity
+for(var in c("i","v")){ #all files with i are related to the model with blh. all with v are related to vertical velocity
   
   variables <- str_sub(list.files("/home/enourani/Desktop/Hester_HB/", pattern = paste0("^tab.*", var), full.names = T), 39, -9) #extract variable names for this model
   
@@ -234,8 +247,7 @@ for(var in c("","v")){ #all files with i are related to the model with blh. all 
   
   names(files) <- variables
   
-  
-  plot(0, bty = "l", labels = FALSE, tck = 0, xlim = c(-0.23,0.17), ylim = c(0.5,28.5), xlab = "", ylab = "")
+  plot(0, bty = "l", labels = FALSE, tck = 0, xlim = c(-0.23,0.17), ylim = c(0,29.5), xlab = "", ylab = "")
   #add vertical line for zero
   abline(v = 0, col = "grey30",lty = 2)
   
@@ -243,26 +255,42 @@ for(var in c("","v")){ #all files with i are related to the model with blh. all 
   points(files[[1]]$mean, as.numeric(files[[1]]$ID) - 0.2, col = "darkgoldenrod2", pch = 19, cex = 1.3)
   arrows(files[[1]]$IClower, as.numeric(files[[1]]$ID) - 0.2,
          files[[1]]$ICupper, as.numeric(files[[1]]$ID) - 0.2,
-         col = "darkgoldenrod2", code = 3, length = 0.03, angle = 90, lwd = 2) #angle of 90 to make the arrow head as straight as a line
+         col = "darkgoldenrod2", code = 3, length = 0.03, angle = 90, lwd = 1) #angle of 90 to make the arrow head as straight as a line
   
   points(files[[2]]$mean, as.numeric(files[[2]]$ID) , col = "cornflowerblue", pch = 19, cex = 1.3)
   arrows(files[[2]]$IClower, as.numeric(files[[2]]$ID) ,
          files[[2]]$ICupper, as.numeric(files[[2]]$ID) ,
-         col = "cornflowerblue", code = 3, length = 0.03, angle = 90, lwd = 2) 
+         col = "cornflowerblue", code = 3, length = 0.03, angle = 90, lwd = 1) 
   
   axis(side= 1, at = c(-0.15,0,0.15), labels = c(-0.15,0,0.15), 
        tick=T ,col = NA, col.ticks = 1, tck=-.015)
   
-  axis(side= 2, at= c(1:28), 
-       labels =  tab_dt$ID, 
-       tick = T ,col = NA, col.ticks = 1, 
-       tck = -.015 , 
-       las = 2) 
+  #add title
+  if( var == "i"){
+    axis(side= 2, at= c(1:28), 
+         labels = files[[2]]$ID, 
+         tick = T ,col = NA, col.ticks = 1, 
+         tck = -.015 , 
+         las = 2) 
+    
+    mtext("Model A (boundary layer height as uplift)", side = 3, cex = 0.8, line = 0.5)
   
+    } else {
+    mtext("Model B (vertical velocity as uplift)", side = 3, cex = 0.75, line = 0.5)
+      axis(side= 2, at= c(1:28), 
+           labels =  NA, 
+           tick = T ,col = NA, col.ticks = 1, 
+           tck = -.015 , 
+           las = 2) 
+      
+      #add legend
+      legend("topright", inset=c(-0.01,0), legend = c("Wind support", "Uplift", "Tagged as adult"), 
+             col = c("cornflowerblue","darkgoldenrod1", "black"), 
+             pch = 19, bg="white",bty="n", cex = 0.9)
+      }
   
-  #add legend
-  legend(x = 1.25, y = 4.5, legend = c( "Wind support var", "Wind support", expression(italic(paste(Delta,"T")))), 
-         col = c("pink1", "cornflowerblue","darkgoldenrod1"), #coords indicate top-left
-         pch = 19, bg="white",bty="n", cex = 0.9)
+  points(x =rep(-.24,5), y = which(files[[2]]$ID %in% age_id[age_id$age == "Adult","id"]), pch = 20,cex = 1)
   
 }
+
+dev.off()
