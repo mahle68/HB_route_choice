@@ -139,15 +139,16 @@ gr_blh <- readRDS("/home/enourani/Desktop/Hester_HB/graph_M_i.rds")
 gr_vv <- readRDS("/home/enourani/Desktop/Hester_HB/graph_M_v.rds")
 
 
-
-#X11(width = 8.4, height = 2.7)
-png("/home/enourani/Desktop/Hester_HB/")
+#X11(width = 8.4, height = 3)
+png("/home/enourani/Desktop/Hester_HB/coeff_plot.png", units = "in", width = 8.4, height = 3, res = 300)
 
 par(mfrow = c(1,2),
     cex = 0.7,
-    oma = c(0,13,0,0),
-    mar = c(3, 2, 3, 1),
-    bty = "l"
+    oma = c(0,14,0,0),
+    mar = c(3, 1, 3, 1),
+    bty = "l",
+    #font = 3,
+    font.axis = 3
 )
 
 
@@ -187,7 +188,7 @@ axis(side = 2, at = c(1:7),
      tick=T ,col = NA, col.ticks = 1, # NULL would mean to use the defult color specified by "fg" in par
      tck=-.015 , #tick marks smaller than default by this proportion
      las=2) # text perpendicular to axis label 
-  mtext("Uplift proxy: boundary layer height", side = 3, cex = 0.8, line = 1)
+  mtext("Model A (boundary layer height as uplift)", side = 3, cex = 0.8, line = 1)
   
 } else {
   axis(side = 2, at = c(1:7),
@@ -196,21 +197,22 @@ axis(side = 2, at = c(1:7),
        tck=-.015 , #tick marks smaller than default by this proportion
        las=2) # text perpendicular to axis label 
   
-  mtext("Uplift proxy: vertical velocity", side = 3, cex = 0.8, line = 1)
+  mtext("Model B (vertical velocity as uplift)", side = 3, cex = 0.75, line = 1)
 }
-  
-
 
 }
 
+dev.off()
 
 
 
+#### STEP 3: individual variation plots ---------------------------------------------------------------------
 
-# individual variation plot
+tab_blh_i <- readRDS("/home/enourani/Desktop/Hester_HB/tab_blh_M_i.rds")
+tabl_wspt_i <- readRDS("/home/enourani/Desktop/Hester_HB/tab_wspt_M_i.rds")
 
-
-
+tabl_v_v <- readRDS("/home/enourani/Desktop/Hester_HB/tab_vv_M_v.rds")
+tab_wspt_v <- readRDS("/home/enourani/Desktop/Hester_HB/tab_wspt_M_v.rds")
 
 
 
@@ -223,33 +225,44 @@ par(mfrow = c(1,2), bty="n",
     mar = c(3, 2, 0.5, 1)
 )
 
-
-plot(0, bty = "l", labels = FALSE, tck = 0, xlim = c(-0.2,0.15), ylim = c(0.5,28.5), xlab = "", ylab = "")
-#add vertical line for zero
-abline(v = 0, col = "grey30",lty = 2)
-
-points(tab_vv$mean, as.numeric(tab_vv$ID) - 0.2, col = "darkgoldenrod2", pch = 19, cex = 1.3)
-arrows(tab_vv$IClower, as.numeric(tab_vv$ID) - 0.2,
-       tab_vv$ICupper, as.numeric(tab_vv$ID) - 0.2,
-       col = "darkgoldenrod2", code = 3, length = 0.03, angle = 90, lwd = 2) #angle of 90 to make the arrow head as straight as a line
-
-points(tab_wspt$mean, as.numeric(tab_wspt$ID) , col = "cornflowerblue", pch = 19, cex = 1.3)
-arrows(tab_wspt$IClower, as.numeric(tab_wspt$ID) ,
-       tab_wspt$ICupper, as.numeric(tab_wspt$ID) ,
-       col = "cornflowerblue", code = 3, length = 0.03, angle = 90, lwd = 2) 
-
-axis(side= 1, at = c(-2,-1,0,1,2), labels = c(-2,-1,0,1,2), 
-     tick=T ,col = NA, col.ticks = 1, tck=-.015)
-
-axis(side= 2, at= c(1:4), 
-     labels =  tab_dt$ID, 
-     tick = T ,col = NA, col.ticks = 1, 
-     tck = -.015 , 
-     las = 2) 
-
-#add legend
-legend(x = 1.25, y = 4.5, legend = c( "Wind support var", "Wind support", expression(italic(paste(Delta,"T")))), 
-       col = c("pink1", "cornflowerblue","darkgoldenrod1"), #coords indicate top-left
-       pch = 19, bg="white",bty="n", cex = 0.9)
-
-
+for(var in c("","v")){ #all files with i are related to the model with blh. all with v are related to vertical velocity
+  
+  variables <- str_sub(list.files("/home/enourani/Desktop/Hester_HB/", pattern = paste0("^tab.*", var), full.names = T), 39, -9) #extract variable names for this model
+  
+  files <- list.files("/home/enourani/Desktop/Hester_HB/", pattern = paste0("^tab.*", var), full.names = T) %>% #list files for this model
+    lapply(readRDS)
+  
+  names(files) <- variables
+  
+  
+  plot(0, bty = "l", labels = FALSE, tck = 0, xlim = c(-0.23,0.17), ylim = c(0.5,28.5), xlab = "", ylab = "")
+  #add vertical line for zero
+  abline(v = 0, col = "grey30",lty = 2)
+  
+  
+  points(files[[1]]$mean, as.numeric(files[[1]]$ID) - 0.2, col = "darkgoldenrod2", pch = 19, cex = 1.3)
+  arrows(files[[1]]$IClower, as.numeric(files[[1]]$ID) - 0.2,
+         files[[1]]$ICupper, as.numeric(files[[1]]$ID) - 0.2,
+         col = "darkgoldenrod2", code = 3, length = 0.03, angle = 90, lwd = 2) #angle of 90 to make the arrow head as straight as a line
+  
+  points(files[[2]]$mean, as.numeric(files[[2]]$ID) , col = "cornflowerblue", pch = 19, cex = 1.3)
+  arrows(files[[2]]$IClower, as.numeric(files[[2]]$ID) ,
+         files[[2]]$ICupper, as.numeric(files[[2]]$ID) ,
+         col = "cornflowerblue", code = 3, length = 0.03, angle = 90, lwd = 2) 
+  
+  axis(side= 1, at = c(-0.15,0,0.15), labels = c(-0.15,0,0.15), 
+       tick=T ,col = NA, col.ticks = 1, tck=-.015)
+  
+  axis(side= 2, at= c(1:28), 
+       labels =  tab_dt$ID, 
+       tick = T ,col = NA, col.ticks = 1, 
+       tck = -.015 , 
+       las = 2) 
+  
+  
+  #add legend
+  legend(x = 1.25, y = 4.5, legend = c( "Wind support var", "Wind support", expression(italic(paste(Delta,"T")))), 
+         col = c("pink1", "cornflowerblue","darkgoldenrod1"), #coords indicate top-left
+         pch = 19, bg="white",bty="n", cex = 0.9)
+  
+}
