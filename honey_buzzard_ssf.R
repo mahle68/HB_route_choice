@@ -7,6 +7,7 @@ library(INLA)
 library(tidyverse)
 library(ggregplot)
 library(magrittr)
+library(rNDOW) #for ggTraj
 
 #open data
 load("/home/enourani/Desktop/Hester_HB/HB_annotated_data.RData")
@@ -197,7 +198,7 @@ axis(side = 2, at = c(1:7),
        tck=-.015 , #tick marks smaller than default by this proportion
        las=2) # text perpendicular to axis label 
   
-  mtext("Model B (vertical velocity as uplift)", side = 3, cex = 0.75, line = 1)
+  mtext("Model B (vertical velocity as uplift)", side = 3, cex = 0.8, line = 1)
 }
 
 }
@@ -206,7 +207,7 @@ dev.off()
 
 
 
-#### STEP 3: individual variation plots ---------------------------------------------------------------------
+#### STEP 4: individual variation plots ---------------------------------------------------------------------
 
 
 #assign migratory year to each individual ID
@@ -294,3 +295,50 @@ for(var in c("i","v")){ #all files with i are related to the model with blh. all
 }
 
 dev.off()
+
+#### STEP 5: make maps for Mohammed ---------------------------------------------------------------------
+
+
+m <- all_data %>% 
+  filter(id == "Mohammed" & case_ == 1) %>% 
+  arrange(timestamp)
+
+ggTraj(m, xyi = c("lon2", "lat2"))
+
+ggplot(m, aes(lon2,lat2)) +
+  geom_path() +
+  geom_tile(map.raster) +
+  facet_wrap(.~year)
+
+
+#https://r-spatial.org/r/2018/10/25/ggplot2-sf-3.html
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+base <- world <- ne_coastline(scale = 'medium', returnclass = 'sf')
+
+
+
+ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2) +
+  theme_bw() +
+  facet_wrap(.~year, nrow = 1)
+
+ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = BLH), size = 2) +
+  theme_bw() +
+  facet_wrap(.~year, nrow = 1)
+
+ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2) +
+  theme_bw() +
+  facet_wrap(.~year, nrow = 1)
+
+
+
