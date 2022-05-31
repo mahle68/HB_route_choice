@@ -6,7 +6,9 @@ library(INLA)
 library(tidyverse)
 library(ggregplot)
 library(magrittr)
-library(rNDOW) #for ggTraj
+library(viridis) #color palette for the maps
+library(ggpubr)
+
 
 #open data
 load("/home/enourani/Desktop/Hester_HB/HB_annotated_data.RData")
@@ -138,9 +140,12 @@ graph$Factor <- rownames(graph)
 gr_blh <- readRDS("/home/enourani/Desktop/Hester_HB/graph_M_i.rds")
 gr_vv <- readRDS("/home/enourani/Desktop/Hester_HB/graph_M_v.rds")
 
+#select a color from the color palette that was used for the maps
+clr <- viridis::mako(12)[8]
+clr <- viridis::magma(12)[5]
 
 #X11(width = 8.4, height = 3)
-png("/home/enourani/Desktop/Hester_HB/coeff_plot.png", units = "in", width = 8.4, height = 3, res = 300)
+png("/home/enourani/Desktop/Hester_HB/coeff_plot_magma.png", units = "in", width = 8.4, height = 3, res = 300)
 
 par(mfrow = c(1,2),
     cex = 0.7,
@@ -172,10 +177,10 @@ plot(0, type = "n", labels = FALSE, tck = 0, xlim = c(-0.05,0.14), ylim = c(0.7,
 #add vertical line for zero
 abline(v = 0, col = "grey30",lty = 2)
 #add points and error bars
-points(graph$Estimate, graph$Factor_n, col = "cornflowerblue", pch = 20, cex = 2)
+points(graph$Estimate, graph$Factor_n, col = clr, pch = 20, cex = 2)
 arrows(graph$Lower, graph$Factor_n,
        graph$Upper, graph$Factor_n,
-       col = "cornflowerblue", code = 3, length = 0.03, angle = 90, lwd = 2) #angle of 90 to make the arrow head as straight as a line
+       col = clr, code = 3, length = 0.03, angle = 90, lwd = 2) #angle of 90 to make the arrow head as straight as a line
 
 #add axes
 axis(side= 1, at = c(-0.04, 0, 0.04, 0.08,0.12), labels =  c(-0.04, 0, 0.04, 0.08, 0.12), 
@@ -300,12 +305,6 @@ m <- all_data %>%
   filter(id == "Mohammed" & case_ == 1) %>% 
   arrange(timestamp)
 
-ggTraj(m, xyi = c("lon2", "lat2"))
-
-ggplot(m, aes(lon2,lat2)) +
-  geom_path() +
-  geom_tile(map.raster) +
-  facet_wrap(.~year)
 
 
 #https://r-spatial.org/r/2018/10/25/ggplot2-sf-3.html
@@ -314,36 +313,121 @@ library(rnaturalearthdata)
 
 base <- world <- ne_coastline(scale = 'medium', returnclass = 'sf')
 
+#color palettes: mako is blue, magma is red
 
-
-ggplot(data = base) +
+ws <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
-  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
-  geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2, lineend = "round") +
-  #scale_colour_gradientn(colours = wes_palette("Zissou1", 3, type = "continuous"), limits = c(-17,22), 
-  #                     na.value = "white", name = "Wind support\n (m/s)")+
-  
-  scale_colour_viridis(option = "mako", na.value = "white", name = "Wind support\n (m/s)") +
-  theme_bw() +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2.5, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white", name = "(m/s)", alpha = 0.7) +
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+ scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "Wind support") +
   facet_wrap(.~year, nrow = 1)
 
-ggplot(data = base) +
+blh <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
-  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
-  geom_path(data = m, aes(x = lon2, y = lat2, col = BLH), size = 2, lineend = "round") +
-  scale_colour_viridis(option = "mako", na.value = "white",  name = "Boundary layer\n height (m)")+
-  theme_bw() +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = log(BLH)), size = 2.5, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white",  name = "(m)", alpha = 0.7)+
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+  scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "log(Boundary layer height)") +
   facet_wrap(.~year, nrow = 1)
 
-ggplot(data = base) +
+vv <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
-  coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = m, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2.5, lineend = "round") +
-  #scale_colour_gradientn(colours = wes_palette("Darjeeling1", 150, type = "continuous"), limits = c(-1,1.06), 
-  #                       na.value = "white", name = "Vertical velocity\n (Pa/s)")+
-  scale_colour_viridis(option = "mako", na.value = "white", name = "Vertical velocity\n (Pa/s)") +
-  theme_bw() +
+  scale_colour_viridis(option = "mako", na.value = "white", name = "(Pa/s)", alpha = 0.7) +
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+  scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "Vertical velocity") +
   facet_wrap(.~year, nrow = 1)
 
+X11(width = 9, height = 10)
+ggarrange(ws, blh, vv, nrow = 3)
+
+png("/home/enourani/Desktop/Hester_HB/Mohammed_map_blue.png", units = "in", width = 9, height = 10, res = 300)
+ggarrange(ws, blh, vv, nrow = 3)
+dev.off()
+
+#### STEP 6: make maps for Lars ---------------------------------------------------------------------
+
+l <- all_data %>% 
+  filter(id == "Lars" & case_ == 1) %>% 
+  arrange(timestamp)
 
 
+ws <- ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
+  geom_path(data = l, aes(x = lon2, y = lat2, col = tail), size = 2.5, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white", name = "(m/s)", alpha = 0.7) +
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+  scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "Wind support") +
+  facet_wrap(.~year, nrow = 1)
+
+blh <- ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
+  geom_path(data = l, aes(x = lon2, y = lat2, col = log(BLH)), size = 2.5, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white",  name = "(m)", alpha = 0.7)+
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+  scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "log(Boundary layer height)") +
+  facet_wrap(.~year, nrow = 1)
+
+vv <- ggplot(data = base) +
+  geom_sf(col = "gray", fill = "gray") +
+  coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
+  geom_path(data = l, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2.5, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white", name = "(Pa/s)", alpha = 0.7) +
+  theme_linedraw() +
+  scale_x_continuous(breaks = c(0,30)) +
+  scale_y_continuous(breaks = c(10,30,50)) +
+  theme(axis.text = element_text(size = 10, colour = 1),
+        legend.text = element_text(size = 10, colour = 1), 
+        legend.title = element_text(size = 10, colour = 1),
+        legend.position = "right",
+        legend.background = element_rect(colour = NULL, fill = "white"))+
+  labs(x = NULL, y = NULL, title = "Vertical velocity") +
+  facet_wrap(.~year, nrow = 1)
+
+X11(width = 9, height = 10)
+ggarrange(ws, blh, vv, nrow = 3)
+
+png("/home/enourani/Desktop/Hester_HB/Lars_map_blue.png", units = "in", width = 9, height = 10, res = 300)
+ggarrange(ws, blh, vv, nrow = 3)
+dev.off()
