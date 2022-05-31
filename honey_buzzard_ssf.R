@@ -2,7 +2,6 @@
 #Elham Nourani, PhD.
 #MPI of Animal Behavior. Konstanz, DE. May 23. 2022
 
-
 library(INLA)
 library(tidyverse)
 library(ggregplot)
@@ -209,7 +208,6 @@ dev.off()
 
 #### STEP 4: individual variation plots ---------------------------------------------------------------------
 
-
 #assign migratory year to each individual ID
 load("/home/enourani/Desktop/Hester_HB/HB_annotated_data.RData") #annotated_data
 
@@ -298,7 +296,6 @@ dev.off()
 
 #### STEP 5: make maps for Mohammed ---------------------------------------------------------------------
 
-
 m <- all_data %>% 
   filter(id == "Mohammed" & case_ == 1) %>% 
   arrange(timestamp)
@@ -322,21 +319,29 @@ base <- world <- ne_coastline(scale = 'medium', returnclass = 'sf')
 ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
-  geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2, lineend = "round") +
+  #scale_colour_gradientn(colours = wes_palette("Zissou1", 3, type = "continuous"), limits = c(-17,22), 
+  #                     na.value = "white", name = "Wind support\n (m/s)")+
+  
+  scale_colour_viridis(option = "mako", na.value = "white", name = "Wind support\n (m/s)") +
   theme_bw() +
   facet_wrap(.~year, nrow = 1)
 
 ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
-  geom_path(data = m, aes(x = lon2, y = lat2, col = BLH), size = 2) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = BLH), size = 2, lineend = "round") +
+  scale_colour_viridis(option = "mako", na.value = "white",  name = "Boundary layer\n height (m)")+
   theme_bw() +
   facet_wrap(.~year, nrow = 1)
 
 ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(0, 64), expand = FALSE) +
-  geom_path(data = m, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2) +
+  geom_path(data = m, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2.5, lineend = "round") +
+  #scale_colour_gradientn(colours = wes_palette("Darjeeling1", 150, type = "continuous"), limits = c(-1,1.06), 
+  #                       na.value = "white", name = "Vertical velocity\n (Pa/s)")+
+  scale_colour_viridis(option = "mako", na.value = "white", name = "Vertical velocity\n (Pa/s)") +
   theme_bw() +
   facet_wrap(.~year, nrow = 1)
 
