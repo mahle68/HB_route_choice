@@ -315,7 +315,7 @@ ws <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = m, aes(x = lon2, y = lat2, col = tail), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white", name = "(m/s)", alpha = 0.7) +
+  scale_colour_viridis(option = "magma", na.value = "white", name = "m/s", alpha = 0.7) +
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
  scale_y_continuous(breaks = c(10,30,50)) +
@@ -331,7 +331,7 @@ blh <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = m, aes(x = lon2, y = lat2, col = log(BLH)), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white",  name = "", alpha = 0.7)+
+  scale_colour_viridis(option = "magma", na.value = "white",  name = "log m", alpha = 0.7)+
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
   scale_y_continuous(breaks = c(10,30,50)) +
@@ -347,7 +347,7 @@ vv <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = m, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white", name = "(Pa/s)", alpha = 0.7) +
+  scale_colour_viridis(option = "magma", na.value = "white", name = "Pa/s", alpha = 0.7) +
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
   scale_y_continuous(breaks = c(10,30,50)) +
@@ -362,7 +362,7 @@ vv <- ggplot(data = base) +
 X11(width = 9, height = 10)
 ggarrange(ws, blh, vv, nrow = 3)
 
-png("/home/enourani/Desktop/Hester_HB/Mohammed_map_no_unit.png", units = "in", width = 9, height = 10, res = 300)
+png("/home/enourani/Desktop/Hester_HB/Mohammed_map_logm.png", units = "in", width = 9, height = 10, res = 300)
 ggarrange(ws, blh, vv, nrow = 3)
 dev.off()
 
@@ -377,7 +377,7 @@ ws <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = l, aes(x = lon2, y = lat2, col = tail), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white", name = "(m/s)", alpha = 0.7) +
+  scale_colour_viridis(option = "magma", na.value = "white", name = "m/s", alpha = 0.7) +
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
   scale_y_continuous(breaks = c(10,30,50)) +
@@ -393,7 +393,7 @@ blh <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = l, aes(x = lon2, y = lat2, col = log(BLH)), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white",  name = "", alpha = 0.7)+
+  scale_colour_viridis(option = "magma", na.value = "white",  name = "log m", alpha = 0.7)+
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
   scale_y_continuous(breaks = c(10,30,50)) +
@@ -409,7 +409,7 @@ vv <- ggplot(data = base) +
   geom_sf(col = "gray", fill = "gray") +
   coord_sf(xlim = c(-10, 38), ylim = c(3, 64), expand = FALSE) +
   geom_path(data = l, aes(x = lon2, y = lat2, col = vertical_pressure), size = 2.5, lineend = "round") +
-  scale_colour_viridis(option = "magma", na.value = "white", name = "(Pa/s)", alpha = 0.7) +
+  scale_colour_viridis(option = "magma", na.value = "white", name = "Pa/s", alpha = 0.7) +
   theme_linedraw() +
   scale_x_continuous(breaks = c(0,30)) +
   scale_y_continuous(breaks = c(10,30,50)) +
@@ -424,6 +424,6 @@ vv <- ggplot(data = base) +
 X11(width = 9, height = 10)
 ggarrange(ws, blh, vv, nrow = 3)
 
-png("/home/enourani/Desktop/Hester_HB/Lars_map_no_unit.png", units = "in", width = 9, height = 10, res = 300)
+png("/home/enourani/Desktop/Hester_HB/Lars_map_logm.png", units = "in", width = 9, height = 10, res = 300)
 ggarrange(ws, blh, vv, nrow = 3)
 dev.off()
